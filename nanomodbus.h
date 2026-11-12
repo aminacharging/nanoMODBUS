@@ -249,6 +249,7 @@ struct nmbs_t {
     struct {
         uint8_t buf[260];
         uint16_t buf_idx;
+        uint16_t len;    // Bytes of a complete message in buf, recv() must not read past them
 
         uint8_t unit_id;
         uint8_t fc;

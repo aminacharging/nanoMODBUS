@@ -146,6 +146,10 @@ static void swap_regs(uint16_t* data, uint16_t n) {
 
 static nmbs_error recv(nmbs_t* nmbs, uint16_t count) {
     if (nmbs->msg.complete) {
+        // The whole message is already in buf, reject reads past what the sender declared
+        if ((uint32_t) nmbs->msg.buf_idx + count > nmbs->msg.len)
+            return NMBS_ERROR_INVALID_TCP_MBAP;
+
         return NMBS_ERROR_NONE;
     }
 
@@ -202,6 +206,7 @@ static void msg_state_reset(nmbs_t* nmbs) {
     nmbs->msg.broadcast = false;
     nmbs->msg.ignored = false;
     nmbs->msg.complete = false;
+    nmbs->msg.len = 0;
 }
 
 
@@ -368,7 +373,7 @@ static nmbs_error recv_msg_header(nmbs_t* nmbs, bool* first_byte_received) {
         nmbs->msg.unit_id = get_1(nmbs);
         nmbs->msg.fc = get_1(nmbs);
 
-        if (length < 2 || length > 255)
+        if (length < 2 || length > 254)
             return NMBS_ERROR_INVALID_TCP_MBAP;
 
         // Receive the rest of the message
@@ -379,6 +384,8 @@ static nmbs_error recv_msg_header(nmbs_t* nmbs, bool* first_byte_received) {
         if (protocol_id != 0)
             return NMBS_ERROR_INVALID_TCP_MBAP;
 
+        // Transaction id, protocol id and length fields, then `length` bytes
+        nmbs->msg.len = 6 + length;
         nmbs->msg.complete = true;
     }
 
@@ -1254,12 +1261,12 @@ static nmbs_error handle_write_multiple_registers(nmbs_t* nmbs) {
 
     NMBS_DEBUG_PRINT("a %d\tq %d\tb %d\tregs ", address, quantity, registers_bytes);
 
+    if (registers_bytes > 246)
+        return NMBS_ERROR_INVALID_REQUEST;
+
     err = recv(nmbs, registers_bytes);
     if (err != NMBS_ERROR_NONE)
         return err;
-
-    if (registers_bytes > 246)
-        return NMBS_ERROR_INVALID_REQUEST;
 
     uint16_t registers[0x007B];
     for (uint_fast8_t i = 0; i < registers_bytes / 2; i++) {

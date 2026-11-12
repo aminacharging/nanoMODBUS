@@ -8,3 +8,6 @@ build*
 /examples/cmake-build*
 /examples/build*
 doxygen
+fuzz/corpus/
+fuzz/fuzz_server
+fuzz/nanomodbus.o
