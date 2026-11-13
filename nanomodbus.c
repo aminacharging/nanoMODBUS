@@ -146,7 +146,6 @@ static void swap_regs(uint16_t* data, uint16_t n) {
 
 static nmbs_error recv(nmbs_t* nmbs, uint16_t count) {
     if (nmbs->msg.complete) {
-        // The whole message is already in buf, reject reads past what the sender declared
         if ((uint32_t) nmbs->msg.buf_idx + count > nmbs->msg.len)
             return NMBS_ERROR_INVALID_TCP_MBAP;
 

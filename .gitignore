@@ -11,3 +11,8 @@ doxygen
 fuzz/corpus/
 fuzz/fuzz_server
 fuzz/nanomodbus.o
+fuzz/fuzz_server_cov
+fuzz/nanomodbus_cov.o
+fuzz/cov.profraw
+fuzz/cov.profdata
+fuzz/cov_html/

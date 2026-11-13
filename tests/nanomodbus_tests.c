@@ -138,12 +138,9 @@ void test_server_receive_base(nmbs_transport transport) {
         uint64_t start = now_ms();
         err = nmbs_server_poll(&server);
         check(err);
-
         uint64_t diff = now_ms() - start;
-
         expect(diff >= (uint64_t) read_timeout_ms);
     }
-
 
     should("honor byte_timeout and return NMBS_ERROR_TIMEOUT");
     reset(server);
